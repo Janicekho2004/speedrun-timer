@@ -1,7 +1,14 @@
-import TimerView from './components/TimerView';
+import { Routes, Route } from "react-router-dom"
+import TimerView from "./components/TimerView"
+import HistoryView from "./components/HistoryView"
 
 function App() {
-  return <TimerView />;
+  return (
+    <Routes>
+      <Route path="/" element={<TimerView />} />
+      <Route path="/history" element={<HistoryView />} />
+    </Routes>
+  )
 }
 
-export default App;
+export default App

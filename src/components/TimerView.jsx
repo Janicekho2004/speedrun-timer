@@ -1,3 +1,5 @@
+import { NavLink } from "react-router-dom"
+
 function TimerView() {
   return (
     <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] flex flex-col">
@@ -70,19 +72,28 @@ function TimerView() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-[#171f33] border-t border-[#424754] flex justify-around py-2">
+    <nav
+        className="fixed bottom-0 left-0 right-0
+        bg-[#171f33]
+        border-t border-[#424754]
+        flex justify-around py-2"
+    >
+        <NavLink
+            to="/"
+            className="flex flex-col items-center text-[#4edea3]"
+        >
+            <span className="text-xl">◷</span>
+            <span className="text-xs mt-1">Timer</span>
+        </NavLink>
 
-        <button className="flex flex-col items-center text-[#4edea3]">
-          <span className="text-xl">◷</span>
-          <span className="text-xs mt-1">Timer</span>
-        </button>
-
-        <button className="flex flex-col items-center text-[#c2c6d6]">
-          <span className="text-xl">↻</span>
-          <span className="text-xs mt-1">History</span>
-        </button>
-
-      </nav>
+        <NavLink
+            to="/history"
+            className="flex flex-col items-center text-[#c2c6d6]"
+        >
+            <span className="text-xl">↻</span>
+            <span className="text-xs mt-1">History</span>
+        </NavLink>
+    </nav>
 
     </div>
   )
