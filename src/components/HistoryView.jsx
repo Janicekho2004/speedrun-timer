@@ -1,59 +1,69 @@
 import { NavLink } from "react-router-dom"
 import RunHistoryItem from "./RunHistoryItem"
+import { useEffect, useState } from "react"
 
 function HistoryView() {
-  const runs = [
-    {
-      game: "Elden Ring",
-      category: "Any%",
-      date: "Oct 24, 2023",
-      time: "59:12.44",
-      status: "PB",
-    },
-    {
-      game: "Hollow Knight",
-      category: "100%",
-      date: "Oct 22, 2023",
-      time: "1:42:15.89",
-    },
-    {
-      game: "Sekiro",
-      category: "Glitchless",
-      date: "Oct 20, 2023",
-      time: "1:15:02.12",
-    },
-    {
-      game: "Elden Ring",
-      category: "Any%",
-      date: "Oct 19, 2023",
-      time: "42:11.00",
-      status: "Reset",
-    },
-  ]
+    const formatTime = (milliseconds) => {
+        const totalCentiseconds = Math.floor(milliseconds / 10)
 
-  return (
+        const centiseconds = totalCentiseconds % 100
+        const totalSeconds = Math.floor(totalCentiseconds / 100)
+
+        const seconds = totalSeconds % 60
+        const totalMinutes = Math.floor(totalSeconds / 60)
+
+        const minutes = totalMinutes % 60
+        const hours = Math.floor(totalMinutes / 60)
+
+        if (hours > 0) {
+            return `${String(hours).padStart(2, "0")}:${String(
+                minutes
+            ).padStart(2, "0")}:${String(seconds).padStart(
+                2,
+                "0"
+            )}.${String(centiseconds).padStart(2, "0")}`
+        }
+
+        return `${String(minutes).padStart(2, "0")}:${String(
+            seconds
+        ).padStart(2, "0")}.${String(centiseconds).padStart(
+            2,
+            "0"
+        )}`
+    }
+
+    const [runs, setRuns] = useState([])
+
+    useEffect(() => {
+        const savedRuns =
+            JSON.parse(localStorage.getItem("speedrunRuns")) || []
+
+        setRuns(savedRuns)
+    }, [])
+
+    return (
     <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
 
-      {/* Top Bar */}
-      <header className="h-14 border-b border-[#424754]
-      flex items-center justify-between px-4">
+        {/* Top Bar */}
+        <header className="h-14 border-b border-[#424754]
+        flex items-center justify-between px-4">
 
         <button className="text-xl text-[#adc6ff]">
-          ☰
+            ☰
         </button>
 
         <h1 className="text-2xl font-bold">
-          Run History
+            Run History
         </h1>
 
         <button className="text-xl text-[#adc6ff]">
-          ⚙
+            ⚙
         </button>
 
-      </header>
+        </header>
 
-      {/* Main Content */}
-      <main className="p-4 pb-24">
+        {/* Main Content */}
+        <main className="p-4 pb-24">
 
         {/* Filter Bar */}
         <div className="flex justify-between items-center
@@ -62,31 +72,47 @@ function HistoryView() {
         rounded-lg p-3 mb-4
         text-sm text-[#c2c6d6]">
 
-          <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center">
             <span>☷</span>
             <span>All Games</span>
-          </div>
+            </div>
 
-          <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center">
             <span>Recent</span>
             <span>⇅</span>
-          </div>
+            </div>
 
         </div>
 
         {/* History List */}
         <div className="space-y-3">
-          {runs.map((run, index) => (
-            <RunHistoryItem
-              key={index}
-              {...run}
-            />
-          ))}
+
+            {runs.length === 0 ? (
+                <div className="text-center text-[#8c909f] mt-20">
+                <p className="text-lg">No runs yet.</p>
+
+                <p className="text-sm mt-2">
+                    Finish your first speedrun to see it here.
+                </p>
+                </div>
+            ) : (
+                runs.map((run) => (
+                <RunHistoryItem
+                    key={run.id}
+                    game={run.game}
+                    category={run.category}
+                    date={run.date}
+                    time={formatTime(run.time)}
+                    status={run.status}
+                />
+                ))
+        )}
+
         </div>
 
-      </main>
+        </main>
 
-      {/* Bottom Navigation */}
+        {/* Bottom Navigation */}
     <nav
         className="fixed bottom-0 left-0 right-0
         bg-[#171f33]
