@@ -6,6 +6,7 @@ function TimerView() {
     const [isRunning, setIsRunning] = useState(false)
     const [hasStarted, setHasStarted] = useState(false)
     const [splits, setSplits] = useState([])
+    const [personalBest, setPersonalBest] = useState(null)
 
     const startTimeRef = useRef(0)
     const previousElapsedRef = useRef(0)
@@ -19,7 +20,6 @@ function TimerView() {
     const handleFinish = () => {
         if (!hasStarted) return
 
-        // Get the most accurate current time
         const finalTime = isRunning
         ? previousElapsedRef.current +
             (performance.now() - startTimeRef.current)
@@ -29,22 +29,6 @@ function TimerView() {
 
         const existingRuns =
         JSON.parse(localStorage.getItem("speedrunRuns")) || []
-
-        // Find previous completed runs for same game/category
-        const previousRuns = existingRuns.filter(
-        (run) =>
-            run.game === game &&
-            run.category === category &&
-            run.status !== "Reset"
-        )
-
-        const previousBest =
-        previousRuns.length > 0
-            ? Math.min(...previousRuns.map((run) => run.time))
-            : null
-
-        const isPB =
-        previousBest === null || finalTime < previousBest
 
         const newRun = {
             id: Date.now(),
@@ -56,40 +40,114 @@ function TimerView() {
                 month: "short",
                 year: "numeric",
             }),
-            status: isPB ? "PB" : null,
+            status: null,
             splits,
         }
 
-        const updatedRuns = [newRun, ...existingRuns]
+        // Put newest run together with previous runs
+        const allRuns = [newRun, ...existingRuns]
+
+        // Only compare completed runs from the same game/category
+        const comparableRuns = allRuns.filter(
+            (run) =>
+                run.game === game &&
+                run.category === category &&
+                run.status !== "Reset" &&
+                typeof run.time === "number"
+        )
+
+        // Find the single fastest run
+        const fastestRun = comparableRuns.reduce(
+            (best, run) => {
+                if (!best || run.time < best.time) {
+                return run
+                }
+
+                return best
+            },
+            null
+        )
+
+        // Remove old PB badges and give PB only to fastest run
+        const updatedRuns = allRuns.map((run) => {
+            if (
+                run.game === game &&
+                run.category === category &&
+                run.status !== "Reset"
+            ) {
+                return {
+                ...run,
+                status:
+                    run.id === fastestRun?.id
+                    ? "PB"
+                    : null,
+                }
+            }
+
+            return run
+        })
 
         localStorage.setItem(
             "speedrunRuns",
             JSON.stringify(updatedRuns)
         )
 
+        setPersonalBest(fastestRun?.time ?? null)
+
         navigate("/history")
     }
 
+    
     // Timer loop
     useEffect(() => {
-    if (!isRunning) return
+        if (!isRunning) return
 
-    const updateTimer = (currentTime) => {
-        const newElapsed =
-        previousElapsedRef.current +
-        (currentTime - startTimeRef.current)
+        const updateTimer = (currentTime) => {
+            const newElapsed =
+            previousElapsedRef.current +
+            (currentTime - startTimeRef.current)
 
-        setElapsedTime(newElapsed)
+            setElapsedTime(newElapsed)
 
-        animationRef.current = requestAnimationFrame(updateTimer)
-    }
+            animationRef.current =
+            requestAnimationFrame(updateTimer)
+        }
 
-    animationRef.current = requestAnimationFrame(updateTimer)
+        animationRef.current =
+            requestAnimationFrame(updateTimer)
 
-    return () => {
-        cancelAnimationFrame(animationRef.current)
-    }
+        return () => {
+            if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current)
+            }
+        }
     }, [isRunning])
+
+
+    // Load Personal Best
+    useEffect(() => {
+        const savedRuns =
+            JSON.parse(localStorage.getItem("speedrunRuns")) || []
+
+        const completedRuns = savedRuns.filter(
+            (run) =>
+            run.game === game &&
+            run.category === category &&
+            run.status !== "Reset" &&
+            typeof run.time === "number"
+        )
+
+        if (completedRuns.length === 0) {
+            setPersonalBest(null)
+            return
+        }
+
+        const bestTime = Math.min(
+            ...completedRuns.map((run) => run.time)
+        )
+
+        setPersonalBest(bestTime)
+    }, [])
 
     // Format: 00:42:15.82
     const formatTime = (milliseconds) => {
@@ -292,7 +350,10 @@ function TimerView() {
         </div>
 
         <div className="mt-8 mb-4 text-[#c2c6d6] font-mono">
-            🏆 Personal Best: 58:24.10
+            🏆 Personal Best:{" "}
+            {personalBest !== null
+                ? formatTime(personalBest)
+                : "No PB yet"}
         </div>
 
         </main>

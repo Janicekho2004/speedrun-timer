@@ -41,6 +41,30 @@ function HistoryView() {
         setRuns(savedRuns)
     }, [])
 
+    const getPersonalBestId = (game, category) => {
+        const matchingRuns = runs.filter(
+            (run) =>
+                run.game === game &&
+                run.category === category &&
+                run.status !== "Reset" &&
+                typeof run.time === "number"
+            )
+
+            if (matchingRuns.length === 0) {
+                return null
+            }
+
+            const fastestRun = matchingRuns.reduce((best, run) => {
+                if (!best || run.time < best.time) {
+                    return run
+            }
+
+            return best
+        }, null)
+
+        return fastestRun.id
+    }
+
     return (
     <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
 
@@ -96,16 +120,30 @@ function HistoryView() {
                 </p>
                 </div>
             ) : (
-                runs.map((run) => (
-                <RunHistoryItem
-                    key={run.id}
-                    game={run.game}
-                    category={run.category}
-                    date={run.date}
-                    time={formatTime(run.time)}
-                    status={run.status}
-                />
-                ))
+                runs.map((run) => {
+                    const personalBestId = getPersonalBestId(
+                        run.game,
+                        run.category
+                    )
+
+                    const status =
+                        run.status === "Reset"
+                        ? "Reset"
+                        : run.id === personalBestId
+                        ? "PB"
+                        : null
+
+                    return (
+                        <RunHistoryItem
+                        key={run.id}
+                        game={run.game}
+                        category={run.category}
+                        date={run.date}
+                        time={formatTime(run.time)}
+                        status={status}
+                        />
+                    )
+                })
         )}
 
         </div>
