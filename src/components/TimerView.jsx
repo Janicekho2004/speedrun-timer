@@ -6,6 +6,7 @@ function TimerView() {
     const [isRunning, setIsRunning] = useState(false)
     const [hasStarted, setHasStarted] = useState(false)
     const [splits, setSplits] = useState([])
+    const [pbSplits, setPbSplits] = useState([])
     const [personalBest, setPersonalBest] = useState(null)
 
     const startTimeRef = useRef(0)
@@ -16,6 +17,28 @@ function TimerView() {
 
     const game = "Elden Ring"
     const category = "Any%"
+
+    const currentSplitIndex = splits.length
+    const pbSplitTime =
+        pbSplits[currentSplitIndex]?.time ??
+        (currentSplitIndex === 0 ? personalBest : null)
+    const comparison =
+        pbSplitTime !== null
+            ? elapsedTime - pbSplitTime
+            : null
+
+    const formatDifference = (milliseconds) => {
+        const seconds = Math.abs(milliseconds) / 1000
+
+        const sign =
+            milliseconds < 0
+            ? "-"
+            : milliseconds > 0
+            ? "+"
+            : ""
+
+        return `${sign}${seconds.toFixed(2)}s`
+    }
 
     const handleFinish = () => {
         if (!hasStarted) return
@@ -30,6 +53,14 @@ function TimerView() {
         const existingRuns =
         JSON.parse(localStorage.getItem("speedrunRuns")) || []
 
+        const finalSplits = [
+            ...splits,
+            {
+                number: splits.length + 1,
+                time: finalTime,
+            },
+        ]
+
         const newRun = {
             id: Date.now(),
             game,
@@ -41,7 +72,7 @@ function TimerView() {
                 year: "numeric",
             }),
             status: null,
-            splits,
+            splits: finalSplits,
         }
 
         // Put newest run together with previous runs
@@ -93,6 +124,7 @@ function TimerView() {
         )
 
         setPersonalBest(fastestRun?.time ?? null)
+        setPbSplits(fastestRun?.splits || [])
 
         navigate("/history")
     }
@@ -139,36 +171,45 @@ function TimerView() {
 
         if (completedRuns.length === 0) {
             setPersonalBest(null)
+            setPbSplits([])
             return
         }
 
-        const bestTime = Math.min(
-            ...completedRuns.map((run) => run.time)
+        const fastestRun = completedRuns.reduce(
+            (best, run) => {
+            if (!best || run.time < best.time) {
+                return run
+            }
+
+                return best
+            },
+            null
         )
 
-        setPersonalBest(bestTime)
-    }, [])
+        setPersonalBest(fastestRun.time)
+        setPbSplits(fastestRun.splits || [])
+    }, [game, category])
 
     // Format: 00:42:15.82
     const formatTime = (milliseconds) => {
-    const totalCentiseconds = Math.floor(milliseconds / 10)
+        const totalCentiseconds = Math.floor(milliseconds / 10)
 
-    const centiseconds = totalCentiseconds % 100
-    const totalSeconds = Math.floor(totalCentiseconds / 100)
+        const centiseconds = totalCentiseconds % 100
+        const totalSeconds = Math.floor(totalCentiseconds / 100)
 
-    const seconds = totalSeconds % 60
-    const totalMinutes = Math.floor(totalSeconds / 60)
+        const seconds = totalSeconds % 60
+        const totalMinutes = Math.floor(totalSeconds / 60)
 
-    const minutes = totalMinutes % 60
-    const hours = Math.floor(totalMinutes / 60)
+        const minutes = totalMinutes % 60
+        const hours = Math.floor(totalMinutes / 60)
 
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-        2,
-        "0"
-    )}:${String(seconds).padStart(2, "0")}.${String(centiseconds).padStart(
-        2,
-        "0"
-    )}`
+        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+            2,
+            "0"
+        )}:${String(seconds).padStart(2, "0")}.${String(centiseconds).padStart(
+            2,
+            "0"
+        )}`
     }
 
     const handleStart = () => {
@@ -210,7 +251,7 @@ function TimerView() {
         {/* Top Bar */}
         <header className="h-14 border-b border-[#424754] flex items-center justify-between px-4">
             <button className="text-[#adc6ff] text-xl">
-                ☰
+                {"\u2630"}
             </button>
 
             <h1 className="text-xl font-bold">
@@ -218,7 +259,7 @@ function TimerView() {
             </h1>
 
             <button className="text-[#adc6ff] text-xl">
-                ⚙
+                {"\u2699"}
             </button>
         </header>
 
@@ -236,11 +277,34 @@ function TimerView() {
                 Godrick the Grafted
             </h2>
 
-            <div className="mt-3 bg-[#4edea3]/10 border border-[#4edea3]/20 px-3 py-1 rounded-full">
-                <span className="font-mono text-[#4edea3]">
-                    ↓ -1.24s
-                </span>
-            </div>
+            {hasStarted && comparison !== null && (
+                <div
+                    className={`mt-3 px-3 py-1 rounded-full border ${
+                    comparison <= 0
+                        ? "bg-[#4edea3]/10 border-[#4edea3]/20"
+                        : "bg-[#ffb4ab]/10 border-[#ffb4ab]/20"
+                    }`}
+                >
+                    <span
+                        className={`font-mono ${
+                            comparison <= 0
+                            ? "text-[#4edea3]"
+                            : "text-[#ffb4ab]"
+                        }`}
+                    >
+                        {comparison <= 0 ? "\u2193" : "\u2191"}{" "}
+                        {formatDifference(comparison)}
+                    </span>
+                </div>
+            )}
+
+            {hasStarted && comparison === null && (
+                <div className="mt-3 px-3 py-1 rounded-full border border-[#424754]">
+                    <span className="font-mono text-[#8c909f]">
+                        No PB comparison
+                    </span>
+                </div>
+            )}
 
             {/* Splits */}
             {splits.length > 0 && (
@@ -302,7 +366,7 @@ function TimerView() {
                     py-3 rounded-lg
                     hover:bg-[#31394d] transition"
                 >
-                    ⏸ Pause
+                    {"\u23F8"} Pause
                 </button>
                 ) : (
                 <button
@@ -312,7 +376,7 @@ function TimerView() {
                     py-3 rounded-lg
                     hover:bg-[#31394d] transition"
                 >
-                    ▶ Resume
+                    {"\u25B6"} Resume
                 </button>
                 )}
 
@@ -323,7 +387,7 @@ function TimerView() {
                     py-3 rounded-lg
                     hover:bg-[#31394d] transition"
                 >
-                    ↻ Reset
+                    {"\u21BB"} Reset
                 </button>
 
             </div>
@@ -350,7 +414,7 @@ function TimerView() {
         </div>
 
         <div className="mt-8 mb-4 text-[#c2c6d6] font-mono">
-            🏆 Personal Best:{" "}
+            {"\u{1F3C6}"} Personal Best:{" "}
             {personalBest !== null
                 ? formatTime(personalBest)
                 : "No PB yet"}
@@ -365,7 +429,7 @@ function TimerView() {
             to="/"
             className="flex flex-col items-center text-[#4edea3]"
         >
-            <span className="text-xl">◷</span>
+            <span className="text-xl">{"\u25B7"}</span>
             <span className="text-xs mt-1">Timer</span>
         </NavLink>
 
@@ -373,7 +437,7 @@ function TimerView() {
             to="/history"
             className="flex flex-col items-center text-[#c2c6d6]"
         >
-            <span className="text-xl">↻</span>
+            <span className="text-xl">{"\u21BB"}</span>
             <span className="text-xs mt-1">History</span>
         </NavLink>
 
