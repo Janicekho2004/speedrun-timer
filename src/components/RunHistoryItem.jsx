@@ -4,6 +4,7 @@ function RunHistoryItem({
   date,
   time,
   status,
+  onDelete
 }) {
   const isPB = status === "PB"
   const isReset = status === "Reset"
@@ -69,9 +70,18 @@ function RunHistoryItem({
         </span>
 
         <div className="text-[#8c909f] mt-2">
-          ›
+          {"\u203A"}
         </div>
 
+        <button
+          onClick={(event) => {
+            event.stopPropagation()
+            onDelete?.()
+          }}
+          className="mt-2 text-xs text-[#ffb4ab] hover:text-red-400 transition"
+        >
+          Delete
+        </button>
       </div>
     </div>
   )

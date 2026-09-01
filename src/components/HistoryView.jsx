@@ -65,6 +65,25 @@ function HistoryView() {
         return fastestRun.id
     }
 
+    const handleDeleteRun = (id) => {
+        const confirmed = window.confirm(
+            "Delete this run?"
+        )
+
+        if (!confirmed) return
+
+        const updatedRuns = runs.filter(
+            (run) => run.id !== id
+        )
+
+        setRuns(updatedRuns)
+
+        localStorage.setItem(
+            "speedrunRuns",
+            JSON.stringify(updatedRuns)
+        )
+    }
+
     return (
     <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
 
@@ -141,6 +160,7 @@ function HistoryView() {
                         date={run.date}
                         time={formatTime(run.time)}
                         status={status}
+                        onDelete={() => handleDeleteRun(run.id)}
                         />
                     )
                 })
