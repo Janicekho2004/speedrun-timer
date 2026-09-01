@@ -109,6 +109,17 @@ function HistoryView() {
         )
     }
 
+    const handleClearHistory = () => {
+        const confirmed = window.confirm(
+            "Clear all run history? This cannot be undone."
+        )
+
+        if (!confirmed) return
+
+        localStorage.removeItem("speedrunRuns")
+        setRuns([])
+    }
+
     return (
     <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
 
@@ -201,6 +212,22 @@ function HistoryView() {
         </div>
 
         </div>
+
+        <button
+            onClick={handleClearHistory}
+            className="
+            w-full mb-4
+            border border-[#ffb4ab]/40
+            text-[#ffb4ab]
+            font-semibold
+            py-3
+            rounded-lg
+            hover:bg-[#ffb4ab]/10
+            transition
+            "
+        >
+            Clear History
+        </button>
 
         {/* History List */}
         <div className="space-y-3">
