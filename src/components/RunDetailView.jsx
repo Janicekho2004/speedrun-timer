@@ -31,6 +31,14 @@ function RunDetailView() {
     )}.${String(centiseconds).padStart(2, "0")}`
   }
 
+    const getSegmentTime = (splits, index) => {
+        if (index === 0) {
+            return splits[index].time
+        }
+
+        return splits[index].time - splits[index - 1].time
+    }
+
   if (!run) {
     return (
       <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] flex flex-col items-center justify-center">
@@ -126,21 +134,58 @@ function RunDetailView() {
           ) : (
             <div className="space-y-2">
 
-              {run.splits.map((split) => (
-                <div
-                  key={split.number}
-                  className="bg-[#1E293B] border border-[#334155] rounded-lg px-4 py-3 flex justify-between items-center"
-                >
-                    <span className="text-[#c2c6d6]">
-                        {split.name || `Split ${split.number}`}
-                    </span>
+              <div className="flex justify-between text-xs text-[#8c909f] mb-2 px-1">
+                <span>Split</span>
 
-                  <span className="font-mono font-semibold">
-                    {formatTime(split.time)}
-                  </span>
+                <div className="text-right">
+                  <span>Overall / Segment</span>
+                </div>
+              </div>
+
+        {run.splits.map((split, index) => {
+            const segmentTime = getSegmentTime(
+                run.splits,
+                index
+            )
+
+            return (
+                <div
+                key={split.number}
+                className="
+                    bg-[#1E293B]
+                    border border-[#334155]
+                    rounded-lg
+                    px-4 py-3
+                    flex justify-between
+                    items-center
+                "
+                >
+                {/* Split name */}
+                <div>
+                    <p className="text-[#dae2fd] font-medium">
+                    {split.name || `Split ${split.number}`}
+                    </p>
+
+                    <p className="text-xs text-[#8c909f] mt-1">
+                    Segment
+                    </p>
+                </div>
+
+                {/* Times */}
+                <div className="text-right">
+
+                    <p className="font-mono font-semibold text-[#dae2fd]">
+                        {formatTime(split.time)}
+                    </p>
+
+                    <p className="font-mono text-sm text-[#4edea3] mt-1">
+                        {formatTime(segmentTime)}
+                    </p>
 
                 </div>
-              ))}
+            </div>
+            )
+        })}
 
             </div>
           )}
