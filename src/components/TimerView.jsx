@@ -321,13 +321,75 @@ function TimerView() {
     }
 
     const handleReset = () => {
+        if (!hasStarted) return
+
+        const wasRunning = isRunning
+
+        // Capture the exact current time
+        const currentElapsed = isRunning
+            ? previousElapsedRef.current +
+            (performance.now() - startTimeRef.current)
+            : elapsedTime
+
+        // Temporarily pause while asking
+        setIsRunning(false)
+        setElapsedTime(currentElapsed)
+        previousElapsedRef.current = currentElapsed
+
+        const confirmed = window.confirm(
+            "Reset this run? The run will be saved as a failed/reset run."
+        )
+
+        // User changed their mind
+        if (!confirmed) {
+            if (wasRunning) {
+            startTimeRef.current = performance.now()
+            previousElapsedRef.current = currentElapsed
+            setIsRunning(true)
+            }
+
+            return
+        }
+
+        // Load existing history
+        const existingRuns =
+            JSON.parse(localStorage.getItem("speedrunRuns")) || []
+
+        // Save failed run
+        const resetRun = {
+            id: Date.now(),
+            game,
+            category,
+            time: currentElapsed,
+            date: new Date().toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            }),
+            status: "Reset",
+            splits,
+        }
+
+        const updatedRuns = [
+            resetRun,
+            ...existingRuns,
+        ]
+
+        localStorage.setItem(
+            "speedrunRuns",
+            JSON.stringify(updatedRuns)
+        )
+
+        // Clear current run
         setIsRunning(false)
         setHasStarted(false)
         setElapsedTime(0)
         setSplits([])
 
         previousElapsedRef.current = 0
+        startTimeRef.current = 0
     }
+    
 
     const handleSplit = () => {
         if (!hasStarted) return
