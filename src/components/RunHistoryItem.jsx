@@ -4,13 +4,15 @@ function RunHistoryItem({
   date,
   time,
   status,
-  onDelete
+  onDelete,
+  onClick
 }) {
   const isPB = status === "PB"
   const isReset = status === "Reset"
 
   return (
     <div
+      onClick={onClick}
       className={`bg-[#1E293B] border border-[#334155] rounded-xl p-4
       flex justify-between items-center
       hover:bg-[#2d3449] transition cursor-pointer

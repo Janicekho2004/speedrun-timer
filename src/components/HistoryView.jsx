@@ -1,8 +1,10 @@
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate, } from "react-router-dom"
 import RunHistoryItem from "./RunHistoryItem"
 import { useEffect, useState } from "react"
 
 function HistoryView() {
+    const navigate = useNavigate()
+
     const formatTime = (milliseconds) => {
         const totalCentiseconds = Math.floor(milliseconds / 10)
 
@@ -161,6 +163,7 @@ function HistoryView() {
                         time={formatTime(run.time)}
                         status={status}
                         onDelete={() => handleDeleteRun(run.id)}
+                        onClick={() => navigate(`/history/${run.id}`)}
                         />
                     )
                 })
