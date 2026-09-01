@@ -131,9 +131,9 @@ function RunDetailView() {
                   key={split.number}
                   className="bg-[#1E293B] border border-[#334155] rounded-lg px-4 py-3 flex justify-between items-center"
                 >
-                  <span className="text-[#c2c6d6]">
-                    Split {split.number}
-                  </span>
+                    <span className="text-[#c2c6d6]">
+                        {split.name || `Split ${split.number}`}
+                    </span>
 
                   <span className="font-mono font-semibold">
                     {formatTime(split.time)}

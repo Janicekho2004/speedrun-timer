@@ -23,7 +23,97 @@ function TimerView() {
         "Sekiro": ["Any%", "Shura", "Glitchless"],
     }
 
+    const splitOptions = {
+        "Elden Ring": {
+            "Any%": [
+            "Margit",
+            "Godrick the Grafted",
+            "Red Wolf",
+            "Morgott",
+            "Fire Giant",
+            "Maliketh",
+            "Final Boss",
+            ],
+
+            "All Remembrances": [
+            "Godrick",
+            "Rennala",
+            "Radahn",
+            "Rykard",
+            "Morgott",
+            "Fire Giant",
+            "Maliketh",
+            "Final Boss",
+            ],
+
+            "Glitchless": [
+            "Margit",
+            "Godrick",
+            "Rennala",
+            "Morgott",
+            "Fire Giant",
+            "Maliketh",
+            "Final Boss",
+            ],
+        },
+
+        "Hollow Knight": {
+            "Any%": [
+            "False Knight",
+            "Hornet",
+            "Mantis Claw",
+            "Watcher Knights",
+            "The Hollow Knight",
+            ],
+
+            "100%": [
+            "Greenpath",
+            "City of Tears",
+            "Crystal Peak",
+            "Deepnest",
+            "Dreamers",
+            "Final Boss",
+            ],
+
+            "No Major Glitches": [
+            "False Knight",
+            "Hornet",
+            "Mantis Claw",
+            "Dreamers",
+            "Final Boss",
+            ],
+        },
+
+        "Sekiro": {
+            "Any%": [
+            "Gyoubu",
+            "Genichiro",
+            "Guardian Ape",
+            "Corrupted Monk",
+            "Divine Dragon",
+            "Final Boss",
+            ],
+
+            "Shura": [
+            "Gyoubu",
+            "Genichiro",
+            "Guardian Ape",
+            "Emma",
+            "Isshin",
+            ],
+
+            "Glitchless": [
+            "Gyoubu",
+            "Genichiro",
+            "Guardian Ape",
+            "Divine Dragon",
+            "Final Boss",
+            ],
+        },
+    }
+
     const currentSplitIndex = splits.length
+
     const pbSplitTime =
         pbSplits[currentSplitIndex]?.time ??
         (currentSplitIndex === 0 ? personalBest : null)
@@ -242,8 +332,15 @@ function TimerView() {
     const handleSplit = () => {
         if (!hasStarted) return
 
+        const splitIndex = splits.length
+
+        if (splitIndex >= splitNames.length) {
+            return
+        }
+
         const newSplit = {
-            number: splits.length + 1,
+            number: splitIndex + 1,
+            name: splitNames[splitIndex],
             time: elapsedTime,
         }
 
@@ -256,6 +353,12 @@ function TimerView() {
         setGame(selectedGame)
         setCategory(gameOptions[selectedGame][0])
     }
+
+    const splitNames =
+    splitOptions[game]?.[category] || []
+
+    const currentSplitName =
+        splitNames[currentSplitIndex] || "All Splits Complete"
 
     return (
     <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] flex flex-col">
@@ -344,7 +447,7 @@ function TimerView() {
             </div>
 
             <h2 className="text-xl font-semibold mt-5">
-                Godrick the Grafted
+                {currentSplitName}
             </h2>
 
             {hasStarted && comparison !== null && (
@@ -389,7 +492,7 @@ function TimerView() {
                     className="flex justify-between border-b border-[#424754] py-2"
                 >
                     <span>
-                        Split {split.number}
+                        {split.name || `Split ${split.number}`}
                     </span>
 
                     <span className="font-mono">
@@ -417,11 +520,19 @@ function TimerView() {
             ) : (
             <button
                 onClick={handleSplit}
-                className="w-full bg-[#4d8eff] text-[#00285d]
-                font-semibold text-lg py-5 rounded-lg
-                hover:bg-[#adc6ff] transition"
-            >
-                SPLIT
+                disabled={splits.length >= splitNames.length}
+                className={`
+                    w-full font-semibold text-lg py-5 rounded-lg transition
+                    ${
+                    splits.length >= splitNames.length
+                        ? "bg-[#2d3449] text-[#8c909f] cursor-not-allowed"
+                        : "bg-[#4d8eff] text-[#00285d] hover:bg-[#adc6ff]"
+                    }
+                `}
+                >
+                {splits.length >= splitNames.length
+                    ? "ALL SPLITS COMPLETE"
+                    : "SPLIT"}
             </button>
             )}
 
