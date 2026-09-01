@@ -35,6 +35,8 @@ function HistoryView() {
     }
 
     const [runs, setRuns] = useState([])
+    const [selectedGame, setSelectedGame] = useState("All Games")
+    const [sortOrder, setSortOrder] = useState("recent")
 
     useEffect(() => {
         const savedRuns =
@@ -42,6 +44,27 @@ function HistoryView() {
 
         setRuns(savedRuns)
     }, [])
+
+    const games = [
+        "All Games",
+        ...new Set(runs.map((run) => run.game)),
+    ]
+
+    const displayedRuns = runs
+    .filter((run) => {
+        if (selectedGame === "All Games") {
+        return true
+        }
+
+        return run.game === selectedGame
+    })
+    .sort((a, b) => {
+        if (sortOrder === "recent") {
+        return b.id - a.id
+        }
+
+        return a.id - b.id
+    })
 
     const getPersonalBestId = (game, category) => {
         const matchingRuns = runs.filter(
@@ -117,22 +140,72 @@ function HistoryView() {
         rounded-lg p-3 mb-4
         text-sm text-[#c2c6d6]">
 
-            <div className="flex gap-2 items-center">
-            <span>☷</span>
-            <span>All Games</span>
-            </div>
+        {/* Filter / Sort */}
+        <div
+        className="
+            grid grid-cols-2 gap-3
+            bg-[#131b2e]
+            border border-[#424754]/30
+            rounded-lg p-3 mb-4
+        "
+        >
+        {/* Game Filter */}
+        <select
+            value={selectedGame}
+            onChange={(event) =>
+            setSelectedGame(event.target.value)
+            }
+            className="
+            w-full min-w-0
+            bg-[#1E293B]
+            border border-[#424754]
+            text-[#dae2fd]
+            rounded-lg
+            px-3 py-2
+            text-sm
+            outline-none
+            "
+        >
+            {games.map((gameName) => (
+            <option key={gameName} value={gameName}>
+                {gameName}
+            </option>
+            ))}
+        </select>
 
-            <div className="flex gap-2 items-center">
-            <span>Recent</span>
-            <span>⇅</span>
-            </div>
+        {/* Sort */}
+        <select
+            value={sortOrder}
+            onChange={(event) =>
+            setSortOrder(event.target.value)
+            }
+            className="
+            w-full min-w-0
+            bg-[#1E293B]
+            border border-[#424754]
+            text-[#dae2fd]
+            rounded-lg
+            px-3 py-2
+            text-sm
+            outline-none
+            "
+        >
+            <option value="recent">
+            Recent
+            </option>
+
+            <option value="oldest">
+            Oldest
+            </option>
+        </select>
+        </div>
 
         </div>
 
         {/* History List */}
         <div className="space-y-3">
 
-            {runs.length === 0 ? (
+            {displayedRuns.length === 0 ? (
                 <div className="text-center text-[#8c909f] mt-20">
                 <p className="text-lg">No runs yet.</p>
 
@@ -141,7 +214,7 @@ function HistoryView() {
                 </p>
                 </div>
             ) : (
-                runs.map((run) => {
+                displayedRuns.map((run) => {
                     const personalBestId = getPersonalBestId(
                         run.game,
                         run.category
