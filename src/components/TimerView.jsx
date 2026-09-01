@@ -15,8 +15,13 @@ function TimerView() {
 
     const navigate = useNavigate()
 
-    const game = "Elden Ring"
-    const category = "Any%"
+    const [game, setGame] = useState("Elden Ring")
+    const [category, setCategory] = useState("Any%")
+    const gameOptions = {
+        "Elden Ring": ["Any%", "All Remembrances", "Glitchless"],
+        "Hollow Knight": ["Any%", "100%", "No Major Glitches"],
+        "Sekiro": ["Any%", "Shura", "Glitchless"],
+    }
 
     const currentSplitIndex = splits.length
     const pbSplitTime =
@@ -245,6 +250,13 @@ function TimerView() {
         setSplits([...splits, newSplit])
     }
 
+    const handleGameChange = (event) => {
+        const selectedGame = event.target.value
+
+        setGame(selectedGame)
+        setCategory(gameOptions[selectedGame][0])
+    }
+
     return (
     <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] flex flex-col">
 
@@ -254,14 +266,72 @@ function TimerView() {
                 {"\u2630"}
             </button>
 
-            <h1 className="text-xl font-bold">
-                Elden Ring - Any%
+            <h1 className="text-lg font-bold truncate max-w-[220px] text-center">
+                {game} - {category}
             </h1>
 
             <button className="text-[#adc6ff] text-xl">
                 {"\u2699"}
             </button>
         </header>
+
+        {!hasStarted && (
+        <div className="px-4 py-3 border-b border-[#424754] bg-[#131b2e]">
+            <div className="w-full max-w-sm mx-auto grid grid-cols-2 gap-3">
+
+            {/* Game */}
+            <select
+                value={game}
+                onChange={handleGameChange}
+                className="
+                flex-1
+                bg-[#1E293B]
+                border border-[#424754]
+                text-[#dae2fd]
+                rounded-lg
+                px-3 py-2
+                outline-none
+                "
+            >
+                {Object.keys(gameOptions).map((gameName) => (
+                <option
+                    key={gameName}
+                    value={gameName}
+                >
+                    {gameName}
+                </option>
+                ))}
+            </select>
+
+            {/* Category */}
+            <select
+                value={category}
+                onChange={(event) =>
+                setCategory(event.target.value)
+                }
+                className="
+                flex-1
+                bg-[#1E293B]
+                border border-[#424754]
+                text-[#dae2fd]
+                rounded-lg
+                px-3 py-2
+                outline-none
+                "
+            >
+                {gameOptions[game].map((categoryName) => (
+                <option
+                    key={categoryName}
+                    value={categoryName}
+                >
+                    {categoryName}
+                </option>
+                ))}
+            </select>
+
+            </div>
+        </div>
+        )}
 
         {/* Main */}
         <main className="flex-1 flex flex-col items-center px-4 pb-24">
